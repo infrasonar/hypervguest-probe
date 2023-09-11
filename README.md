@@ -36,6 +36,7 @@ asset:
   check: "hypervguest"
   config:
     address: "192.168.1.2"
+    guuid: "342934292923129393"
 ```
 
 Run the probe with the `DRY_RUN` environment variable set the the yaml file above.
