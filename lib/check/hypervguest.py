@@ -130,7 +130,7 @@ async def check_hypervguest(
         raise IgnoreResultException
     query = Query(f"""
         SELECT
-            InstanceID, Caption, Description, ElementName, InstallDate, Name,
+            InstanceID, ElementName, InstallDate, Name,
             OperationalStatus, Status, HealthState,
             CommunicationStatus, DetailedStatus, OperatingStatus,
             PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
