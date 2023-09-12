@@ -57,13 +57,6 @@ ENHANCED_SESSION_MODE_STATE = {
     6: 'Allowed but not available',
 }
 
-FAILED_OVER_REPLICATION_TYPE = {
-    0: 'None',
-    1: 'Regular ',
-    2: 'Application consistent',
-    3: 'Planned',
-}
-
 # The EnabledState property can also contain more information. For example,
 # when disk space is critically low, HealthState is set to 25, the virtual
 # machine pauses, and EnabledState is set to 32768 (Paused).
@@ -71,13 +64,6 @@ HEALTH_STATE = {
     5: 'OK',
     20: 'Major Failure',
     25: 'Critical failure',
-}
-
-LAST_REPLICATION_TYPE = {
-    0: 'None',
-    1: 'Regular',
-    2: 'Application consistent',
-    3: 'Planned',
 }
 
 OPERATION_STATUS = {
@@ -115,37 +101,12 @@ PRIMARY_STATUS = {
     3: 'Error',
 }
 
-REPLICATION_HEALTH = {
-    0: 'Not applicable',
-    1: 'Ok',
-    2: 'Warning',
-    3: 'Critical',
-}
-
 REPLICATION_MODE = {
     0: 'None',
     1: 'Primary',
     2: 'Replica',
     3: 'Test Replica',
     4: 'Extended Replica',
-}
-
-REPLICATION_STATE = {
-    0: 'Disabled',
-    1: 'Ready for replication',
-    2: 'Waiting to complete initial replication',
-    3: 'Replicating',
-    4: 'Synced replication complete',
-    5: 'Recovered',
-    6: 'Committed',
-    7: 'Suspended',
-    8: 'Critical',
-    9: 'Waiting to start resynchronization',
-    10: 'Resynchronizing',
-    11: 'Resynchronization suspended',
-    12: 'Failover in progress',
-    13: 'Failback in progress',
-    14: 'Failback complete',
 }
 
 REQUESTED_STATE = {
@@ -174,10 +135,8 @@ async def check_hypervguest(
             CommunicationStatus, DetailedStatus, OperatingStatus,
             PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
             EnabledDefault, TimeOfLastStateChange,
-            OnTimeInMilliseconds,ProcessID, TimeOfLastConfigurationChange,
-            NumberOfNumaNodes, ReplicationState, ReplicationHealth,
-            ReplicationMode, FailedOverReplicationType, LastReplicationType,
-            LastApplicationConsistentReplicationTime, LastReplicationTime,
+            OnTimeInMilliseconds, ProcessID, TimeOfLastConfigurationChange,
+            NumberOfNumaNodes, ReplicationMode,
             LastSuccessfulBackupTime, EnhancedSessionModeState,
             HwThreadsPerCoreRealized
         FROM Msvm_ComputerSystem WHERE Name = '{guid}'
@@ -201,12 +160,8 @@ async def check_hypervguest(
             row['EnabledState'] == row['OtherEnabledState']
         row['EnhancedSessionModeState'] = ENHANCED_SESSION_MODE_STATE.get(
             row['EnhancedSessionModeState'])
-        row['FailedOverReplicationType'] = FAILED_OVER_REPLICATION_TYPE.get(
-            row['FailedOverReplicationType'])
         row['HealthState'] = HEALTH_STATE.get(row['HealthState'])
         row['InstallDate'] = parse_wmi_date(row['InstallDate'])
-        row['LastReplicationType'] = LAST_REPLICATION_TYPE.get(
-            row['LastReplicationType'])
         status = row.pop('OperationalStatus')
         row['OperationalStatus'] = OPERATIONAL_STATUS.get(status[0]) \
             if len(status) else None
@@ -214,19 +169,12 @@ async def check_hypervguest(
             if len(status) > 1 else None
         row['OperatingStatus'] = OPERATION_STATUS.get(row['OperatingStatus'])
         row['PrimaryStatus'] = PRIMARY_STATUS.get(row['PrimaryStatus'])
-        row['ReplicationHealth'] = REPLICATION_HEALTH.get(
-            row['ReplicationHealth'])
         row['ReplicationMode'] = REPLICATION_MODE.get(row['ReplicationMode'])
-        row['ReplicationState'] = REPLICATION_STATE.get(
-            row['ReplicationState'])
         row['RequestedState'] = REQUESTED_STATE.get(row['RequestedState'])
         row['TimeOfLastStateChange'] = \
-            parse_wmi_date(row['TimeOfLastStateChange'])
+            int(row['TimeOfLastStateChange'])
         row['TimeOfLastConfigurationChange'] = \
-            parse_wmi_date(row['TimeOfLastConfigurationChange'])
-        row['LastApplicationConsistentReplicationTime'] = \
-            parse_wmi_date(row['LastApplicationConsistentReplicationTime'])
-        row['LastReplicationTime'] = parse_wmi_date(row['LastReplicationTime'])
+            int(row['TimeOfLastConfigurationChange'])
         row['LastSuccessfulBackupTime'] = \
             parse_wmi_date(row['LastSuccessfulBackupTime'])
 
