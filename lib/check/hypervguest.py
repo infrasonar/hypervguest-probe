@@ -174,7 +174,6 @@ async def check_hypervguest(
             CommunicationStatus, DetailedStatus, OperatingStatus,
             PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
             EnabledDefault, TimeOfLastStateChange,
-            NameFormat, PrimaryOwnerName, PrimaryOwnerContact,
             OnTimeInMilliseconds,ProcessID, TimeOfLastConfigurationChange,
             NumberOfNumaNodes, ReplicationState, ReplicationHealth,
             ReplicationMode, FailedOverReplicationType, LastReplicationType,
