@@ -99,23 +99,13 @@ OPERATIONAL_STATUS = {
 }
 
 OPERATIONAL_STATUS_MORE = {
-    0: 'Unknown',
-    1: 'Not Available',
-    2: 'Servicing',
-    3: 'Starting',
-    4: 'Stopping',
-    5: 'Stopped',
-    6: 'Aborted',
-    7: 'Dormant',
-    8: 'Completed',
-    9: 'Migrating',
-    10: 'Emigrating',
-    11: 'Immigrating',
-    12: 'Snapshotting',
-    13: 'Shutting Down',
-    14: 'In Test',
-    15: 'Transitioning',
-    16: 'In Service',
+    32768: 'Creating Snapshot',
+    32769: 'Applying Snapshot',
+    32770: 'Deleting Snapshot',
+    32771: 'Waiting to Start',
+    32772: 'Merging Disks',
+    32773: 'Exporting Virtual Machine',
+    32774: 'Migrating Virtual Machine',
 }
 
 PRIMARY_STATUS = {
@@ -183,7 +173,7 @@ async def check_hypervguest(
             OperationalStatus, Status, HealthState,
             CommunicationStatus, DetailedStatus, OperatingStatus,
             PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
-            EnabledDefault, TimeOfLastStateChange, CreationClassName,
+            EnabledDefault, TimeOfLastStateChange,
             NameFormat, PrimaryOwnerName, PrimaryOwnerContact,
             OnTimeInMilliseconds,ProcessID, TimeOfLastConfigurationChange,
             NumberOfNumaNodes, ReplicationState, ReplicationHealth,
@@ -236,7 +226,6 @@ async def check_hypervguest(
         row['LastReplicationTime'] = parse_wmi_date(row['LastReplicationTime'])
         row['LastSuccessfulBackupTime'] = \
             parse_wmi_date(row['LastSuccessfulBackupTime'])
-
 
     return {
         TYPE_NAME: rows
