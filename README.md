@@ -35,7 +35,7 @@ asset:
   name: "foo.local"
   check: "hypervguest"
   config:
-    address: "192.168.1.2"
+    hypervisor: "192.168.1.2"
     guid: "01234567-0123-0123-0123-0123456789AB"
 ```
 

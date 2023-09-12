@@ -26,9 +26,10 @@ async def wmiconn(
         asset: Asset,
         asset_config: dict,
         check_config: dict) -> Tuple[Connection, Service]:
-    address = check_config.get('address')
-    if not address:
-        address = asset.name
+    hypervisor = check_config.get('hypervisor')
+    if hypervisor is None:
+        msg = 'missing hypervisor in collector configuration'
+        raise CheckException(msg)
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
@@ -44,7 +45,7 @@ async def wmiconn(
     else:
         domain = ''
 
-    conn = Connection(address, username, password, domain)
+    conn = Connection(hypervisor, username, password, domain)
     service = None
 
     try:
