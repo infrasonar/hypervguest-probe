@@ -66,13 +66,24 @@ HEALTH_STATE = {
     25: 'Critical failure',
 }
 
-OPERATION_STATUS = {
-    2: 'OK',
-    3: 'Degraded',
-    5: 'Predictive Failure',
-    10: 'Stopped',
-    11: 'In Service',
-    15: 'Dormant',
+OPERATING_STATUS = {
+    0: 'Unknown',
+    1: 'Not Available',
+    2: 'Servicing',
+    3: 'Starting',
+    4: 'Stopping',
+    5: 'Stopped',
+    6: 'Aborted',
+    7: 'Dormant',
+    8: 'Completed',
+    9: 'Migrating',
+    10: 'Emigrating',
+    11: 'Immigrating',
+    12: 'Snapshotting',
+    13: 'Shutting Down',
+    14: 'In Test',
+    15: 'Transitioning',
+    16: 'In Service',
 }
 
 OPERATIONAL_STATUS = {
@@ -167,7 +178,7 @@ async def check_hypervguest(
             if len(status) else None
         row['OperationalStatusMore'] = OPERATIONAL_STATUS_MORE.get(status[1]) \
             if len(status) > 1 else None
-        row['OperatingStatus'] = OPERATION_STATUS.get(row['OperatingStatus'])
+        row['OperatingStatus'] = OPERATING_STATUS.get(row['OperatingStatus'])
         row['PrimaryStatus'] = PRIMARY_STATUS.get(row['PrimaryStatus'])
         row['ReplicationMode'] = REPLICATION_MODE.get(row['ReplicationMode'])
         row['RequestedState'] = REQUESTED_STATE.get(row['RequestedState'])
