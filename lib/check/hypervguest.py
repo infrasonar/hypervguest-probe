@@ -194,7 +194,11 @@ async def check_hypervguest(
             row['CommunicationStatus'])
         row['DetailedStatus'] = DETAILED_STATUS.get(row['DetailedStatus'])
         row['EnabledDefault'] = ENABLED_DEFAULT.get(row['EnabledDefault'])
-        row['EnabledState'] = ENABLED_STATE.get(row['EnabledState'])
+        enabled_state = row['EnabledState']
+        other_enabled_state = row.pop('OtherEnabledState')
+        row['EnabledState'] = ENABLED_STATE.get(enabled_state)
+        if enabled_state == 1 and isinstance(other_enabled_state, str):
+            row['EnabledState'] == row['OtherEnabledState']
         row['EnhancedSessionModeState'] = ENHANCED_SESSION_MODE_STATE.get(
             row['EnhancedSessionModeState'])
         row['FailedOverReplicationType'] = FAILED_OVER_REPLICATION_TYPE.get(
