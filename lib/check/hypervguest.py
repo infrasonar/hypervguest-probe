@@ -163,9 +163,9 @@ async def check_hypervguest(
         config: dict) -> dict:
     conn, service = await wmiconn(asset, asset_config, config)
 
-    guuid = config.get('guuid')
-    if guuid is None:
-        logging.error(f'missing guuid for {asset}')
+    guid = config.get('guid')
+    if guid is None:
+        logging.error(f'missing guid for {asset}')
         raise IgnoreResultException
     query = Query(f"""
         SELECT
@@ -180,7 +180,7 @@ async def check_hypervguest(
             LastApplicationConsistentReplicationTime, LastReplicationTime,
             LastSuccessfulBackupTime, EnhancedSessionModeState,
             HwThreadsPerCoreRealized
-        FROM Msvm_ComputerSystem WHERE Name = '{guuid}'
+        FROM Msvm_ComputerSystem WHERE Name = '{guid}'
     """, namespace=r'root\virtualization\v2')
     try:
         rows = await wmiquery(conn, service, query)
