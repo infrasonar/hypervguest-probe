@@ -175,7 +175,7 @@ async def check_hypervguest(
         row['InstallDate'] = parse_wmi_date(row['InstallDate'])
         on_time_ms = row.pop('OnTimeInMilliseconds')
         if on_time_ms:
-            row['OnTimeInSeconds'] = on_time_ms // 1000
+            row['OnTimeInSeconds'] = int(on_time_ms // 1000)
         status = row.pop('OperationalStatus')
         row['OperationalStatus'] = OPERATIONAL_STATUS.get(status[0]) \
             if len(status) else None
