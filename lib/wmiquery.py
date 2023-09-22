@@ -33,7 +33,7 @@ async def wmiconn(
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
-        logging.error(f'missing credentails for {asset}')
+        logging.error(f'missing credentials for {asset}')
         raise IgnoreResultException
 
     if '\\' in username:
