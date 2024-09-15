@@ -32,7 +32,7 @@ async def wmiconn(
         raise CheckException(msg)
     username = asset_config.get('username')
     password = asset_config.get('password')
-    if None in (username, password):
+    if username is None or password is None:
         logging.error(f'missing credentials for {asset}')
         raise IgnoreResultException
 
@@ -68,7 +68,7 @@ async def wmiquery(
         conn: Connection,
         service: Service,
         query: Query,
-        refs: Optional[dict] = False,
+        refs: Optional[dict] = None,
         timeout=QUERY_TIMEOUT) -> List[dict]:
     rows = []
 
