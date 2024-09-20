@@ -1,6 +1,6 @@
+import asyncio
 import datetime
 import logging
-from aiowmi.query import Query
 from libprobe.asset import Asset
 from libprobe.exceptions import (
     CheckException,
@@ -69,7 +69,7 @@ async def wmiquery(
         service: Service,
         query: Query,
         refs: Optional[dict] = None,
-        timeout=QUERY_TIMEOUT) -> List[dict]:
+        timeout: int = QUERY_TIMEOUT) -> List[dict]:
     rows = []
 
     try:
@@ -90,6 +90,8 @@ async def wmiquery(
                 rows.append(row)
     except (WbemExInvalidClass, WbemExInvalidNamespace):
         raise IgnoreCheckException
+    except asyncio.TimeoutError:
+        raise CheckException('WMI query timed out')
     except Exception as e:
         error_msg = str(e) or type(e).__name__
         # At this point log the exception as this can be useful for debugging
