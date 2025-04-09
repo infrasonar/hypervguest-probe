@@ -168,7 +168,7 @@ async def check_hypervguest(
         other_enabled_state = row.pop('OtherEnabledState')
         row['EnabledState'] = ENABLED_STATE.get(enabled_state)
         if enabled_state == 1 and isinstance(other_enabled_state, str):
-            row['EnabledState'] == row['OtherEnabledState']
+            row['EnabledState'] = other_enabled_state
         row['EnhancedSessionModeState'] = ENHANCED_SESSION_MODE_STATE.get(
             row['EnhancedSessionModeState'])
         row['HealthState'] = HEALTH_STATE.get(row['HealthState'])

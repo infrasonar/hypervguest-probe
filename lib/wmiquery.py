@@ -1,6 +1,6 @@
+import asyncio
 import datetime
 import logging
-from aiowmi.query import Query
 from libprobe.asset import Asset
 from libprobe.exceptions import (
     CheckException,
@@ -32,8 +32,8 @@ async def wmiconn(
         raise CheckException(msg)
     username = asset_config.get('username')
     password = asset_config.get('password')
-    if None in (username, password):
-        logging.error(f'missing credentails for {asset}')
+    if username is None or password is None:
+        logging.error(f'missing credentials for {asset}')
         raise IgnoreResultException
 
     if '\\' in username:
@@ -68,8 +68,8 @@ async def wmiquery(
         conn: Connection,
         service: Service,
         query: Query,
-        refs: Optional[dict] = False,
-        timeout=QUERY_TIMEOUT) -> List[dict]:
+        refs: Optional[dict] = None,
+        timeout: int = QUERY_TIMEOUT) -> List[dict]:
     rows = []
 
     try:
@@ -90,6 +90,8 @@ async def wmiquery(
                 rows.append(row)
     except (WbemExInvalidClass, WbemExInvalidNamespace):
         raise IgnoreCheckException
+    except asyncio.TimeoutError:
+        raise CheckException('WMI query timed out')
     except Exception as e:
         error_msg = str(e) or type(e).__name__
         # At this point log the exception as this can be useful for debugging
