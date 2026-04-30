@@ -1,8 +1,7 @@
 import datetime
-from typing import Union
 
 
-def parse_wmi_date(val, fmt: str = '%Y%m%d') -> Union[int, None]:
+def parse_wmi_date(val, fmt: str = '%Y%m%d') -> int | None:
     if not val:
         return None
     try:
