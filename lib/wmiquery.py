@@ -4,14 +4,16 @@ import socket
 import datetime
 import logging
 from libprobe.asset import Asset
-from libprobe.exceptions import CheckException, IgnoreCheckException
+from libprobe.exceptions import (
+    CheckException,
+    IgnoreCheckException,
+    IgnoreResultException)
 from aiowmi.query import Query
 from aiowmi.connection import Connection
 from aiowmi.connection import Protocol as Service
 from aiowmi.exceptions import WbemExInvalidClass, WbemExInvalidNamespace
 from aiowmi.kerberos.cache import KerberosCache
 from .kdc import get_kdc
-from . import DOCS_URL
 
 
 DTYPS_NOT_NULL = {
@@ -39,10 +41,8 @@ async def wmiconn(
     password = local_config.get('password')
     auth = config.get('authentication', AUTH_NTLM)
     if username is None or password is None:
-        raise CheckException(
-            'Missing credentials. Please refer to the following documentation'
-            f' for detailed instructions: <{DOCS_URL}>'
-        )
+        logging.error(f'missing credentials for {asset}')
+        raise IgnoreResultException
 
     if '\\' in username:
         # Replace double back-slash with single if required
