@@ -1,6 +1,7 @@
 import logging
 from aiowmi.query import Query
 from libprobe.asset import Asset
+from libprobe.check import Check
 from libprobe.exceptions import IgnoreResultException
 from ..utils import parse_wmi_date
 from ..wmiquery import wmiconn, wmiquery, wmiclose
@@ -129,69 +130,73 @@ REQUESTED_STATE = {
 TYPE_NAME = "guest"
 
 
-async def check_hypervguest(
-        asset: Asset,
-        asset_config: dict,
-        config: dict) -> dict:
-    conn, service = await wmiconn(asset, asset_config, config)
+class CheckHyperVGuest(Check):
+    key = 'hypervguest'
 
-    guid = config.get('guid')
-    if guid is None:
-        logging.error(f'missing guid for {asset}')
-        raise IgnoreResultException
-    query = Query(f"""
-        SELECT
-            InstanceID, ElementName, InstallDate, Name,
-            OperationalStatus, Status, HealthState,
-            CommunicationStatus, DetailedStatus, OperatingStatus,
-            PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
-            EnabledDefault, TimeOfLastStateChange,
-            OnTimeInMilliseconds, ProcessID, TimeOfLastConfigurationChange,
-            NumberOfNumaNodes, ReplicationMode,
-            LastSuccessfulBackupTime, EnhancedSessionModeState,
-            HwThreadsPerCoreRealized
-        FROM Msvm_ComputerSystem WHERE Name = '{guid}'
-    """, namespace=r'root\virtualization\v2')
-    try:
-        rows = await wmiquery(conn, service, query)
-        assert len(rows), 'vm not not found'
-    finally:
-        wmiclose(conn, service)
+    @staticmethod
+    async def run(asset: Asset, local_config: dict, config: dict) -> dict:
+        conn, service = await wmiconn(asset, local_config, config)
 
-    for row in rows:
-        row['name'] = row.pop('Name')
-        row['CommunicationStatus'] = COMMUNICATION_STATUS.get(
-            row['CommunicationStatus'])
-        row['DetailedStatus'] = DETAILED_STATUS.get(row['DetailedStatus'])
-        row['EnabledDefault'] = ENABLED_DEFAULT.get(row['EnabledDefault'])
-        enabled_state = row['EnabledState']
-        other_enabled_state = row.pop('OtherEnabledState')
-        row['EnabledState'] = ENABLED_STATE.get(enabled_state)
-        if enabled_state == 1 and isinstance(other_enabled_state, str):
-            row['EnabledState'] = other_enabled_state
-        row['EnhancedSessionModeState'] = ENHANCED_SESSION_MODE_STATE.get(
-            row['EnhancedSessionModeState'])
-        row['HealthState'] = HEALTH_STATE.get(row['HealthState'])
-        row['InstallDate'] = parse_wmi_date(row['InstallDate'])
-        on_time_ms = row.pop('OnTimeInMilliseconds')  # int
-        if on_time_ms:
-            row['OnTimeInSeconds'] = on_time_ms // 1000
-        status = row.pop('OperationalStatus')
-        row['OperationalStatus'] = OPERATIONAL_STATUS.get(status[0]) \
-            if len(status) else None
-        row['OperationalStatusMore'] = OPERATIONAL_STATUS_MORE.get(status[1]) \
-            if len(status) > 1 else None
-        row['OperatingStatus'] = OPERATING_STATUS.get(row['OperatingStatus'])
-        row['PrimaryStatus'] = PRIMARY_STATUS.get(row['PrimaryStatus'])
-        row['ReplicationMode'] = REPLICATION_MODE.get(row['ReplicationMode'])
-        row['RequestedState'] = REQUESTED_STATE.get(row['RequestedState'])
-        row['TimeOfLastStateChange'] = \
-            int(row['TimeOfLastStateChange'])
-        row['TimeOfLastConfigurationChange'] = \
-            int(row['TimeOfLastConfigurationChange'])
-        row['LastSuccessfulBackupTime'] = \
-            parse_wmi_date(row['LastSuccessfulBackupTime'])
+        guid = config.get('guid')
+        if guid is None:
+            logging.error(f'missing guid for {asset}')
+            raise IgnoreResultException
+        query = Query(f"""
+            SELECT
+                InstanceID, ElementName, InstallDate, Name,
+                OperationalStatus, Status, HealthState,
+                CommunicationStatus, DetailedStatus, OperatingStatus,
+                PrimaryStatus, EnabledState, OtherEnabledState, RequestedState,
+                EnabledDefault, TimeOfLastStateChange,
+                OnTimeInMilliseconds, ProcessID, TimeOfLastConfigurationChange,
+                NumberOfNumaNodes, ReplicationMode,
+                LastSuccessfulBackupTime, EnhancedSessionModeState,
+                HwThreadsPerCoreRealized
+            FROM Msvm_ComputerSystem WHERE Name = '{guid}'
+        """, namespace=r'root\virtualization\v2')
+        try:
+            rows = await wmiquery(conn, service, query)
+            assert len(rows), 'vm not not found'
+        finally:
+            wmiclose(conn, service)
 
-    return {
-        TYPE_NAME: rows
-    }
+        for row in rows:
+            row['name'] = row.pop('Name')
+            row['CommunicationStatus'] = COMMUNICATION_STATUS.get(
+                row['CommunicationStatus'])
+            row['DetailedStatus'] = DETAILED_STATUS.get(row['DetailedStatus'])
+            row['EnabledDefault'] = ENABLED_DEFAULT.get(row['EnabledDefault'])
+            enabled_state = row['EnabledState']
+            other_enabled_state = row.pop('OtherEnabledState')
+            row['EnabledState'] = ENABLED_STATE.get(enabled_state)
+            if enabled_state == 1 and isinstance(other_enabled_state, str):
+                row['EnabledState'] = other_enabled_state
+            row['EnhancedSessionModeState'] = ENHANCED_SESSION_MODE_STATE.get(
+                row['EnhancedSessionModeState'])
+            row['HealthState'] = HEALTH_STATE.get(row['HealthState'])
+            row['InstallDate'] = parse_wmi_date(row['InstallDate'])
+            on_time_ms = row.pop('OnTimeInMilliseconds')  # int
+            if on_time_ms:
+                row['OnTimeInSeconds'] = on_time_ms // 1000
+            status = row.pop('OperationalStatus')
+            row['OperationalStatus'] = OPERATIONAL_STATUS.get(status[0]) \
+                if len(status) else None
+            row['OperationalStatusMore'] = \
+                OPERATIONAL_STATUS_MORE.get(status[1]) \
+                if len(status) > 1 else None
+            row['OperatingStatus'] = \
+                OPERATING_STATUS.get(row['OperatingStatus'])
+            row['PrimaryStatus'] = PRIMARY_STATUS.get(row['PrimaryStatus'])
+            row['ReplicationMode'] = \
+                REPLICATION_MODE.get(row['ReplicationMode'])
+            row['RequestedState'] = REQUESTED_STATE.get(row['RequestedState'])
+            row['TimeOfLastStateChange'] = \
+                int(row['TimeOfLastStateChange'])
+            row['TimeOfLastConfigurationChange'] = \
+                int(row['TimeOfLastConfigurationChange'])
+            row['LastSuccessfulBackupTime'] = \
+                parse_wmi_date(row['LastSuccessfulBackupTime'])
+
+        return {
+            TYPE_NAME: rows
+        }
